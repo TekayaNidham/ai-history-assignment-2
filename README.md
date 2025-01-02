@@ -138,10 +138,7 @@ These methods demonstrate that neural networks, when combined with causal reason
      python main.py
      ```
 
-4. **Outputs**:
-   - Visualizations are saved in the `resources/` directory:
-     - `enhanced_causal_graph.png`: Causal graph.
-     - `enhanced_counterfactual_analysis.png`: Counterfactual analysis.
+
 
 ---
 
