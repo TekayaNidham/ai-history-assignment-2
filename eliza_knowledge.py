@@ -1,144 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>ELIZA (PhD Trauma / Vienna Edition)</title>
-  <!-- Load Pyodide from CDN -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.3/full/pyodide.js"></script>
+"""
+=========================================================
+ ELIZA KNOWLEDGE BASE (Reflections & Rules)
+=========================================================
+This file stores the knowledge base for a specialized 
+ELIZA chatbot focusing on:
+ - PhD trauma
+ - Living in Vienna
+ - Political climate (far-right, elections)
+ - Generic emotional states
+ - Additional coverage for synonyms / different phrasings
 
-  <style>
-    /* Basic reset and body styles */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background: #ECEFF1;
-      font-family: "Open Sans", sans-serif;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
-    }
-    h1 {
-      margin-bottom: 1rem;
-    }
+Import this from your main script to keep code organized.
+"""
 
-    /* Main container */
-    .chat-container {
-      max-width: 600px;
-      width: 100%;
-      background: #FFFFFF;
-      border-radius: 8px;
-      padding: 1rem 1rem 0.5rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      min-height: 500px;
-    }
+import re
 
-    /* Chat window */
-    #chat-window {
-      border: 1px solid #CCC;
-      border-radius: 6px;
-      padding: 1rem;
-      flex: 1 1 auto;
-      overflow-y: auto;
-      background: #FAFAFA;
-      margin-bottom: 1rem;
-    }
-
-    .chat-line {
-      margin: 0.4rem 0;
-      display: inline-block;
-      clear: both;
-      max-width: 80%;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-
-    /* Distinguish user vs. ELIZA messages */
-    .chat-user {
-      background-color: #D1ECF1;
-      color: #0C5460;
-      text-align: right;
-      float: right;
-      padding: 0.6rem;
-      border-radius: 6px;
-    }
-    .chat-eliza {
-      background-color: #FEF9E7;
-      color: #856404;
-      text-align: left;
-      float: left;
-      padding: 0.6rem;
-      border-radius: 6px;
-    }
-
-    /* Input area */
-    .input-container {
-      display: flex;
-      flex-direction: row;
-    }
-    #user-input {
-      flex: 1 1 auto;
-      padding: 0.6rem;
-      border: 1px solid #CCC;
-      border-radius: 4px;
-      margin-right: 0.5rem;
-    }
-    button {
-      padding: 0.6rem 1rem;
-      border: none;
-      border-radius: 4px;
-      background-color: #007BFF;
-      color: #FFF;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>ELIZA (PhD in Vienna Edition)</h1>
-
-  <div class="chat-container">
-    <div id="chat-window">
-      <div class="chat-line chat-eliza">
-        <strong>ELIZA:</strong> Hello! Let's talk about your PhD, life in Vienna, or anything on your mind.
-      </div>
-    </div>
-
-    <div class="input-container">
-      <input id="user-input"
-             type="text"
-             placeholder="Type your message..."
-             onkeypress="checkEnter(event)">
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-
-  <script>
-    let pyodide;
-    let pyodideReadyPromise;
-
-    // Load Pyodide & define python code
-    async function main() {
-      // 1) Load Pyodide
-      pyodide = await loadPyodide({
-        indexURL : "https://cdn.jsdelivr.net/pyodide/v0.23.3/full/"
-      });
-
-      // 2) Our Python code (short placeholder version).
-      //    Replace with your FULL REFLECTIONS & RULES.
-      const pythonCode = `
-import re, random
-
+# Reflection dictionary: Map from user pronouns to "reflected" pronouns
 REFLECTIONS = {
     r"\bI\b": "you",
     r"\bI'm\b": "you're",
@@ -158,6 +35,9 @@ REFLECTIONS = {
     r"\bYourself\b": "myself"
 }
 
+
+# A large set of regex-based rules for matching user input.
+# Many lines now include synonyms or alternative phrasings.
 RULES = [
 
     # ----------------------------------------------------
@@ -466,86 +346,4 @@ RULES = [
       "Please, continue. I'm listening.",
       "I see. Is there more you'd like to share?"])
 ]
-
-def reflect(fragment):
-    if fragment is None:
-        return ""
-    for pattern, replacement in REFLECTIONS.items():
-        fragment = re.sub(pattern, replacement, fragment, flags=re.IGNORECASE)
-    return fragment
-
-def generate_response(user_input):
-    for (pattern, responses) in RULES:
-        match = re.match(pattern, user_input, re.IGNORECASE)
-        if match:
-            response_template = random.choice(responses)
-            result = response_template
-            for i in range(1, len(match.groups())+1):
-                group_text = match.group(i)
-                if group_text is None:
-                    group_text = ""
-                group_text = reflect(group_text)
-                placeholder = f"{{{{{i}}}}}"
-                result = result.replace(placeholder, group_text)
-            return result
-    return "I'm not sure I understand. Could you elaborate?"
-
-def eliza_reply(user_input):
-    return generate_response(user_input)
-`;
-      // 3) Run the Python code
-      await pyodide.runPythonAsync(pythonCode);
-    }
-
-    // Evaluate python expression to call eliza_reply()
-    async function elizaReplyJs(userText) {
-      const code = `eliza_reply("""${userText.replace(/"/g, '\\"')}""")`;
-      let response = await pyodide.runPythonAsync(code);
-      return response;
-    }
-
-    // Called when user clicks "Send"
-    async function sendMessage() {
-      const inputElem = document.getElementById("user-input");
-      const userInput = inputElem.value.trim();
-      if (!userInput) return;
-
-      // Display user message
-      const chatWindow = document.getElementById("chat-window");
-      chatWindow.innerHTML += `
-        <div class="chat-line chat-user">
-          <strong>YOU:</strong> ${userInput}
-        </div>
-      `;
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-
-      // Get response from Python
-      const reply = await elizaReplyJs(userInput);
-
-      // Display ELIZA reply
-      chatWindow.innerHTML += `
-        <div class="chat-line chat-eliza">
-          <strong>ELIZA:</strong> ${reply}
-        </div>
-      `;
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-
-      // Clear input
-      inputElem.value = "";
-      inputElem.focus();
-    }
-
-    // Check if user pressed Enter
-    function checkEnter(event) {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        sendMessage();
-      }
-    }
-
-    // Initialize on load
-    pyodideReadyPromise = main();
-  </script>
-</body>
-</html>
 
