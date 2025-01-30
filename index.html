@@ -5,86 +5,153 @@
   <title>ELIZA (PhD Trauma / Vienna Edition)</title>
   <!-- Load Pyodide from CDN -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.23.3/full/pyodide.js"></script>
+
   <style>
+    /* Basic reset and body styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      font-family: sans-serif;
-      margin: 20px;
-      background: #f0f0f0;
+      background: #ECEFF1;
+      font-family: "Open Sans", sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
     h1 {
-      margin-bottom: 5px;
+      margin-bottom: 1rem;
     }
-    #chat-window {
-      border: 1px solid #aaa;
-      width: 100%;
+
+    /* Main container */
+    .chat-container {
       max-width: 600px;
-      height: 300px;
-      overflow-y: auto;
-      padding: 5px;
-      background: white;
+      width: 100%;
+      background: #FFFFFF;
+      border-radius: 8px;
+      padding: 1rem 1rem 0.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      min-height: 500px;
     }
+
+    /* Chat window */
+    #chat-window {
+      border: 1px solid #CCC;
+      border-radius: 6px;
+      padding: 1rem;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      background: #FAFAFA;
+      margin-bottom: 1rem;
+    }
+
     .chat-line {
-      margin: 5px 0;
+      margin: 0.4rem 0;
+      display: inline-block;
+      clear: both;
+      max-width: 80%;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    /* Distinguish user vs. ELIZA messages */
+    .chat-user {
+      background-color: #D1ECF1;
+      color: #0C5460;
+      text-align: right;
+      float: right;
+      padding: 0.6rem;
+      border-radius: 6px;
     }
     .chat-eliza {
-      color: #555;
+      background-color: #FEF9E7;
+      color: #856404;
+      text-align: left;
+      float: left;
+      padding: 0.6rem;
+      border-radius: 6px;
     }
-    .chat-user {
-      font-weight: bold;
+
+    /* Input area */
+    .input-container {
+      display: flex;
+      flex-direction: row;
+    }
+    #user-input {
+      flex: 1 1 auto;
+      padding: 0.6rem;
+      border: 1px solid #CCC;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+    button {
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #007BFF;
+      color: #FFF;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
+
   <h1>ELIZA (PhD Trauma / Vienna Edition)</h1>
-  <div id="chat-window">
-    <div class="chat-line chat-eliza">
-      <strong>ELIZA:</strong> Hello! Let's talk about your PhD, life in Vienna, or anything on your mind.
+
+  <div class="chat-container">
+    <div id="chat-window">
+      <div class="chat-line chat-eliza">
+        <strong>ELIZA:</strong> Hello! Let's talk about your PhD, life in Vienna, or anything on your mind.
+      </div>
+    </div>
+
+    <div class="input-container">
+      <input id="user-input"
+             type="text"
+             placeholder="Type your message..."
+             onkeypress="checkEnter(event)">
+      <button onclick="sendMessage()">Send</button>
     </div>
   </div>
-  <br>
-  <input id="user-input" type="text" style="width: 80%;" placeholder="Type your message...">
-  <button onclick="sendMessage()">Send</button>
 
   <script>
     let pyodide;
     let pyodideReadyPromise;
 
-    // We'll load Pyodide and then define our Python code
+    // Load Pyodide & define python code
     async function main() {
       // 1) Load Pyodide
-      pyodide = await loadPyodide({ indexURL : "https://cdn.jsdelivr.net/pyodide/v0.23.3/full/" });
-      
-      // 2) Our Python code, including the reflection, rules, and generate_response function
-      //    You can replace this with your FULL code from eliza_knowledge.py
+      pyodide = await loadPyodide({
+        indexURL : "https://cdn.jsdelivr.net/pyodide/v0.23.3/full/"
+      });
+
+      // 2) Our Python code (short placeholder version).
+      //    Replace with your FULL REFLECTIONS & RULES.
       const pythonCode = `
 import re, random
 
-# ---------------------------
-# Reflection dictionary (short version)
-# Replace with your full REFLECTIONS if needed
-# ---------------------------
 REFLECTIONS = {
     r"\\\\bI\\\\b": "you",
     r"\\\\bI'm\\\\b": "you're",
-    r"\\\\bme\\\\b": "you",
-    r"\\\\bmy\\\\b": "your",
     r"\\\\bam\\\\b": "are",
-    r"\\\\byou\\\\b": "I"
+    r"\\\\bmy\\\\b": "your"
+    # ... fill in the rest of your expansions ...
 }
 
-# ---------------------------
-# RULES (short version)
-# Replace with your full expanded RULES
-# ---------------------------
 RULES = [
+    # Just an example rule. Replace with your large set.
     (r"^[Hh]ello|^[Hh]i|^[Hh]ey(.*)",
      ["Hello... Feel free to talk about your PhD struggles, Vienna life, or anything else.",
-      "Hi there! How can I help you today regarding your PhD, trauma, or living in Vienna?",
-      "Hey! What's on your mind related to academia, politics, or personal well-being?"]),
-
-    (r"(.*)\\bhow are you\\b(.*)",
-     ["I'm just a program, but let's focus on you. How are you feeling?",
-      "I'm doing fine in code form. How about you, especially regarding your PhD or Vienna life?"]),
+      "Hi there! How can I help you today regarding your PhD, trauma, or living in Vienna?"]),
 
     (r"(.*)",
      ["I'm here to listen. Could you tell me more?",
@@ -101,14 +168,12 @@ def reflect(fragment):
     return fragment
 
 def generate_response(user_input):
-    # Attempt to match each pattern in RULES
     for (pattern, responses) in RULES:
         match = re.match(pattern, user_input, re.IGNORECASE)
         if match:
             response_template = random.choice(responses)
             result = response_template
-            # For each capturing group, reflect it
-            for i in range(1, len(match.groups()) + 1):
+            for i in range(1, len(match.groups())+1):
                 group_text = match.group(i)
                 if group_text is None:
                     group_text = ""
@@ -116,57 +181,64 @@ def generate_response(user_input):
                 placeholder = f"{{{{{i}}}}}"
                 result = result.replace(placeholder, group_text)
             return result
-    # If nothing matches (shouldn't happen if we have a catch-all)
     return "I'm not sure I understand. Could you elaborate?"
 
 def eliza_reply(user_input):
     return generate_response(user_input)
 `;
-
-      // 3) Run the Python code inside Pyodide
+      // 3) Run the Python code
       await pyodide.runPythonAsync(pythonCode);
     }
 
-    // We'll have a helper function to call eliza_reply from JS
+    // Evaluate python expression to call eliza_reply()
     async function elizaReplyJs(userText) {
       const code = `eliza_reply("""${userText.replace(/"/g, '\\"')}""")`;
       let response = await pyodide.runPythonAsync(code);
       return response;
     }
 
-    // The chat logic in JavaScript:
+    // Called when user clicks "Send"
     async function sendMessage() {
-      const userInputElem = document.getElementById("user-input");
-      const userInput = userInputElem.value.trim();
+      const inputElem = document.getElementById("user-input");
+      const userInput = inputElem.value.trim();
       if (!userInput) return;
 
-      // Display user message in chat
+      // Display user message
       const chatWindow = document.getElementById("chat-window");
       chatWindow.innerHTML += `
         <div class="chat-line chat-user">
           <strong>YOU:</strong> ${userInput}
         </div>
       `;
+      chatWindow.scrollTop = chatWindow.scrollHeight;
 
-      // Call the Python function to get a response
+      // Get response from Python
       const reply = await elizaReplyJs(userInput);
 
-      // Display ELIZA's reply
+      // Display ELIZA reply
       chatWindow.innerHTML += `
         <div class="chat-line chat-eliza">
           <strong>ELIZA:</strong> ${reply}
         </div>
       `;
-      // Scroll to bottom
       chatWindow.scrollTop = chatWindow.scrollHeight;
 
-      // Clear the input field
-      userInputElem.value = "";
-      userInputElem.focus();
+      // Clear input
+      inputElem.value = "";
+      inputElem.focus();
     }
 
-    // Initiate Pyodide as soon as the page loads
+    // Check if user pressed Enter
+    function checkEnter(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Initialize on load
     pyodideReadyPromise = main();
   </script>
 </body>
 </html>
+
