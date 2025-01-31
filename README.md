@@ -13,7 +13,7 @@ It uses **regex-based pattern matching** with synonyms, expansions, and repeated
 ## Live Demo
 
 Try it in your browser:  
-[**https://tekayanidham.github.io/ai-history-assignment-2/**](https://tekayanidham.github.io/ai-history-assignment-2/)
+[**Live demo**](https://tekayanidham.github.io/ai-history-assignment-2/)
 
 *(No server needed! The browser loads a Python environment from Pyodide and runs the chatbot locally.)*
 
@@ -48,11 +48,7 @@ Below is a placeholder for **`ressources/demo.png`** showing an example conversa
    - Imported by `main.py`.  
    - Regex expansions for synonyms, placeholders, fallback patterns.
 
-4. **`ressources/demo.png`**  
-   - A screenshot showing a conversation with the chatbot (placed in the `ressources` folder).
 
-5. **`README.md`** *(this document)*  
-   - Explains usage, links, disclaimers, etc.
 
 ---
 
@@ -75,5 +71,4 @@ You can also **deploy** it on GitHub Pages by pushing this file to your repo’s
 - Run:  
   ```bash
   python main.py
-```
 
