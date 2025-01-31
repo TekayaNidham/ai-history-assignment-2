@@ -1,6 +1,6 @@
 # ELIZA (PhD & Vienna Edition)
 
-A **vintage-style** AI chatbot built using **classic ELIZA** techniques. This project focuses on:
+A **vintage** chatbot built using **classic ELIZA** techniques. This project focuses on:
 - **PhD-related** stress or academic concerns  
 - **Living in Vienna**  
 - **Political/electoral** issues (e.g., far-right outcomes, local politics)  
@@ -15,7 +15,7 @@ It uses **regex-based pattern matching** with synonyms, expansions, and repeated
 Try it in your browser:  
 [**Live demo**](https://tekayanidham.github.io/ai-history-assignment-2/)
 
-*(No server needed! The browser loads a Python environment from Pyodide and runs the chatbot locally.)*
+
 
 ---
 
@@ -25,7 +25,7 @@ Below is a placeholder for **`ressources/demo.png`** showing an example conversa
 
 ![Chatbot Demo](ressources/demo.png "Chatbot Demo Screenshot")
 
-> *If you do not see an image, ensure `demo.png` is placed inside the `ressources` folder or adjust the link above.*
+
 
 ---
 
